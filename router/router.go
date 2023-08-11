@@ -7,7 +7,7 @@ import (
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
-	// router.HandleFunc("/create-room", handleCreateRoom);
+	router.GET("/create-room", HandleCreateRoom)
 	// router.HandleFunc("/join-room", handleJoinRoom);
 	// router.HandleFunc("/send-message", handleSendMessage);
 

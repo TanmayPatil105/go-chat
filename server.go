@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/TanmayPatil105/go-chat/config"
 	"github.com/TanmayPatil105/go-chat/database"
 	"github.com/TanmayPatil105/go-chat/router"
 	"github.com/gin-gonic/gin"
@@ -17,17 +18,10 @@ import (
 
 func main() {
 
-	config := ReadConfig()
+	config := config.ReadConfig()
 
 	// Mongo Client
-	client, err := database.InitDB()
-	if err != nil {
-		panic(err)
-	}
-	err = client.Ping(context.Background(), nil)
-	if err != nil {
-		panic(err)
-	}
+	database.InitDB()
 
 	gin.SetMode(config.GinMode)
 	router := router.SetupRouter()
@@ -51,12 +45,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = server.Shutdown(ctx)
+	err := server.Shutdown(ctx)
 	if err != nil {
 		log.Panicln("Server Shutdown error : ", err)
 	}
 
 	log.Println("\nServer Gracefully Stopped!")
 
-	database.DisconnectDB(client)
+	database.DisconnectDB()
 }
