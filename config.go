@@ -8,9 +8,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-
 type Config struct {
-	Port	string
+	Port    string
 	GinMode string
 }
 
@@ -21,15 +20,15 @@ func ReadConfig() Config {
 		log.Fatal("Error loading .env file:", err)
 	}
 
-	port := os.Getenv("PORT");
+	port := os.Getenv("PORT")
 
-	Mode := os.Getenv("GIN_MODE");
+	Mode := os.Getenv("GIN_MODE")
 
-	var ginMode string;
+	var ginMode string
 
-	if (Mode == "DEBUG"){
+	if Mode == "DEBUG" {
 		ginMode = gin.ReleaseMode
-	} else if (Mode == "RELEASE") {
+	} else if Mode == "RELEASE" {
 		ginMode = gin.DebugMode
 	}
 
