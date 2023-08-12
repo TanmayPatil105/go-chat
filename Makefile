@@ -17,7 +17,7 @@ run:
 	@go run ${SRCS}
 
 .PHONY: build
-build:
+build: deps
 	go build -o ${BINARY_NAME} ${SRCS}
 
 .PHONY: clean
