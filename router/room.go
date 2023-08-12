@@ -37,14 +37,12 @@ func HandleCreateRoom(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	config := config.ReadConfig()
-
 	// fmt.Println("New Session uuid : ", uuid)
 
 	client := database.MongoClient
 
 	options := options.CreateCollection()
-	db := client.Database(config.DatabaseName)
+	db := client.Database(config.AppConfig.DatabaseName)
 	err = db.CreateCollection(context.Background(), uuid.String(), options)
 
 	if err != nil {
@@ -74,8 +72,6 @@ func HandleCreateRoom(c *gin.Context) {
 }
 
 func HandleJoinRoom(c *gin.Context) {
-	config := config.ReadConfig()
-
 	user := c.Query("user")
 	if user == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -93,7 +89,7 @@ func HandleJoinRoom(c *gin.Context) {
 	}
 
 	client := database.MongoClient
-	db := client.Database(config.DatabaseName)
+	db := client.Database(config.AppConfig.DatabaseName)
 
 	if exists, _ := database.CollectionExists(db, room); !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{

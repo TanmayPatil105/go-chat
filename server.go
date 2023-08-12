@@ -16,23 +16,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
 func main() {
 
-	config := config.ReadConfig()
+	config.GetConfig()
 
 	// Mongo Client
 	database.InitDB()
 
-	gin.SetMode(config.GinMode)
+	gin.SetMode(config.AppConfig.GinMode)
 	router := router.SetupRouter()
 
 	server := http.Server{
-		Addr:    ":" + config.Port,
+		Addr:    ":" + config.AppConfig.Port,
 		Handler: router,
 	}
 
 	go func() {
-		fmt.Println("Listening on port", config.Port)
+		fmt.Println("Listening on port", config.AppConfig.Port)
 		server.ListenAndServe()
 	}()
 

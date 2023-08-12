@@ -14,7 +14,9 @@ type Config struct {
 	DatabaseName string
 }
 
-func ReadConfig() Config {
+var AppConfig Config
+
+func GetConfig() {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -35,7 +37,7 @@ func ReadConfig() Config {
 		ginMode = gin.DebugMode
 	}
 
-	return Config{
+	AppConfig = Config{
 		Port:         port,
 		GinMode:      ginMode,
 		DatabaseName: database,
