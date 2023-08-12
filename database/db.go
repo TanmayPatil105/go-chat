@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -32,6 +33,21 @@ func InitDB() {
 	// }()
 
 	MongoClient = client
+}
+
+func CollectionExists(db *mongo.Database, collectionName string) (bool, error) {
+	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, collection := range collections {
+		if collection == collectionName {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func DisconnectDB() {

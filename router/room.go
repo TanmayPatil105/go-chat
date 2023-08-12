@@ -2,6 +2,9 @@ package router
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"time"
 
 	"github.com/TanmayPatil105/go-chat/config"
 	"github.com/TanmayPatil105/go-chat/database"
@@ -10,10 +13,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type Room struct {
+	SessionId    string    `bson:"sessionId"`
+	Owner        string    `bson:"owner, omitempty"`
+	Participants []string  `bson:"participants"`
+	Messages     []Message `bson:"messages"`
+	CreatedAt    time.Time `bson:"created_at"`
+	UpdatedAt    time.Time `bson:"updated_at"`
+}
+
 func HandleCreateRoom(c *gin.Context) {
+
+	owner := c.Query("owner")
+	if owner == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No owner identified",
+		})
+		return
+	}
+
 	uuid, err := uuid.NewRandom()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	config := config.ReadConfig()
@@ -22,15 +43,63 @@ func HandleCreateRoom(c *gin.Context) {
 
 	client := database.MongoClient
 
-	db := client.Database(config.DatabaseName)
 	options := options.CreateCollection()
-	db.CreateCollection(context.Background(), uuid.String(), options)
+	db := client.Database(config.DatabaseName)
+	err = db.CreateCollection(context.Background(), uuid.String(), options)
 
 	if err != nil {
-		// c.JSON(http.StatusInternalServerError, gin.H{
-		// 	"error": "Failed to create collection",
-		// })
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create collection",
+		})
 		return
 	}
+
+	newRoom := Room{
+		SessionId:    uuid.String(),
+		Owner:        owner,
+		Participants: []string{owner},
+		Messages:     []Message{},
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+
+	collection := db.Collection(uuid.String())
+	_, err = collection.InsertOne(context.Background(), newRoom)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	// c.JSON(http.StatusCreated, newRoom)
+
+}
+
+func HandleJoinRoom(c *gin.Context) {
+	config := config.ReadConfig()
+
+	user := c.Query("user")
+	if user == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No user detected",
+		})
+		return
+	}
+
+	room := c.Query("room")
+	if room == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "room is null",
+		})
+		return
+	}
+
+	client := database.MongoClient
+	db := client.Database(config.DatabaseName)
+
+	if exists, _ := database.CollectionExists(db, room); !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Room not found",
+		})
+	}
+	// collection := db.Collection(room)
 
 }

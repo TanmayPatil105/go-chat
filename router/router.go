@@ -8,8 +8,8 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
 	router.GET("/create-room", HandleCreateRoom)
-	// router.HandleFunc("/join-room", handleJoinRoom);
-	// router.HandleFunc("/send-message", handleSendMessage);
+	router.GET("/join-room", HandleJoinRoom)
+	// router.POST("/send-message", HandleSendMessage);
 
 	return router
 }
