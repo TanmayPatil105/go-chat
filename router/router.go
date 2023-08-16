@@ -9,6 +9,7 @@ func SetupRouter() *gin.Engine {
 
 	router.GET("/create-room", HandleCreateRoom)
 	router.GET("/join-room", HandleJoinRoom)
+	router.GET("/exit-room", HandleExitRoom)
 	// router.POST("/send-message", HandleSendMessage);
 
 	return router

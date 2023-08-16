@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/xid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -159,4 +160,78 @@ func HandleJoinRoom(c *gin.Context) {
 	// 	log.Fatal(err)
 	// }
 	// c.JSON(http.StatusCreated, getroom)
+}
+
+func getNoOfParticipants(db *mongo.Database, room string) (int, error) {
+	collection := db.Collection(room)
+
+	filter := bson.D{}
+	options := options.FindOne()
+
+	var getroom Room
+	err := collection.FindOne(context.Background(), filter, options).Decode(&getroom)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(getroom.Participants), nil
+}
+
+func HandleExitRoom(c *gin.Context) {
+	userId := c.Query("userId")
+	if userId == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No user detected",
+		})
+		return
+	}
+
+	room := c.Query("room")
+	if room == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "room is null",
+		})
+		return
+	}
+
+	client := database.MongoClient
+	db := client.Database(config.AppConfig.DatabaseName)
+
+	if exists, _ := database.CollectionExists(db, room); !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Room not found",
+		})
+		return
+	}
+
+	collection := db.Collection(room)
+
+	options := options.Update()
+
+	update := bson.M{
+		"$pull": bson.M{"participants": bson.M{"userid": userId}},
+	}
+
+	_, err := collection.UpdateOne(context.Background(), bson.D{}, update, options)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Couldn't remove participant",
+		})
+		return
+	}
+
+	// Delete room if zero participants
+	count, err := getNoOfParticipants(db, room)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if count == 0 {
+		collection.Drop(context.Background())
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"Status": "User left the room",
+	})
+
 }
