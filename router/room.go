@@ -10,20 +10,27 @@ import (
 	"github.com/TanmayPatil105/go-chat/database"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/xid"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// @Struct UserId -> Name
+type User struct {
+	UserId string
+	Name   string
+}
 
 type Room struct {
 	SessionId    string    `bson:"sessionId"`
 	Owner        string    `bson:"owner, omitempty"`
-	Participants []string  `bson:"participants"`
+	Participants []User    `bson:"participants"`
 	Messages     []Message `bson:"messages"`
 	CreatedAt    time.Time `bson:"created_at"`
 	UpdatedAt    time.Time `bson:"updated_at"`
 }
 
 func HandleCreateRoom(c *gin.Context) {
-
 	owner := c.Query("owner")
 	if owner == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -36,8 +43,6 @@ func HandleCreateRoom(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// fmt.Println("New Session uuid : ", uuid)
 
 	client := database.MongoClient
 
@@ -52,23 +57,32 @@ func HandleCreateRoom(c *gin.Context) {
 		return
 	}
 
+	Owner := User{
+		UserId:  xid.New().String(),
+		Name: owner,
+	}
+
 	newRoom := Room{
 		SessionId:    uuid.String(),
 		Owner:        owner,
-		Participants: []string{owner},
+		Participants: []User{Owner},
 		Messages:     []Message{},
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
 
 	collection := db.Collection(uuid.String())
-	_, err = collection.InsertOne(context.Background(), newRoom)
 
+	_, err = collection.InsertOne(context.Background(), newRoom)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// c.JSON(http.StatusCreated, newRoom)
 
+	// @Return SessionId and UserId
+	c.JSON(http.StatusCreated, gin.H{
+		"SessionId": newRoom.SessionId,
+		"UserId": Owner.UserId,
+	})
 }
 
 func HandleJoinRoom(c *gin.Context) {
@@ -95,7 +109,54 @@ func HandleJoinRoom(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Room not found",
 		})
+		return
 	}
+
+	newUser := User{
+		UserId:  xid.New().String(),
+		Name: user,
+	}
+
+	collection := db.Collection(room)
+
+	options := options.Update()
+
+	update := bson.M{
+		"$push": bson.M{"participants": newUser},
+	}
+
+	_, err := collection.UpdateOne(context.Background(), bson.D{}, update, options)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+	// @Return SessionId and UserId
+	c.JSON(http.StatusCreated, gin.H{
+		"SessionId": room,
+		"UserId": newUser.UserId,
+	})
+
+	// DEBUGGING
+
+	// Number of documents (1)
+	//
+	// filter := bson.D{}
+	// options := options.Count()
 	// collection := db.Collection(room)
 
+	// count, err := collection.CountDocuments(context.Background(), filter, options)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+    // Get room based roomid (collection name)
+	//
+	// filter := bson.D{}
+    // options := options.FindOne()
+    // var getroom Room
+    // err := db.Collection(room).FindOne(context.Background(), filter, options).Decode(&getroom)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// c.JSON(http.StatusCreated, getroom)
 }
