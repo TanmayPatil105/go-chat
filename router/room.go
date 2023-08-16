@@ -58,8 +58,8 @@ func HandleCreateRoom(c *gin.Context) {
 	}
 
 	Owner := User{
-		UserId:  xid.New().String(),
-		Name: owner,
+		UserId: xid.New().String(),
+		Name:   owner,
 	}
 
 	newRoom := Room{
@@ -81,7 +81,7 @@ func HandleCreateRoom(c *gin.Context) {
 	// @Return SessionId and UserId
 	c.JSON(http.StatusCreated, gin.H{
 		"SessionId": newRoom.SessionId,
-		"UserId": Owner.UserId,
+		"UserId":    Owner.UserId,
 	})
 }
 
@@ -113,8 +113,8 @@ func HandleJoinRoom(c *gin.Context) {
 	}
 
 	newUser := User{
-		UserId:  xid.New().String(),
-		Name: user,
+		UserId: xid.New().String(),
+		Name:   user,
 	}
 
 	collection := db.Collection(room)
@@ -126,14 +126,14 @@ func HandleJoinRoom(c *gin.Context) {
 	}
 
 	_, err := collection.UpdateOne(context.Background(), bson.D{}, update, options)
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// @Return SessionId and UserId
 	c.JSON(http.StatusCreated, gin.H{
 		"SessionId": room,
-		"UserId": newUser.UserId,
+		"UserId":    newUser.UserId,
 	})
 
 	// DEBUGGING
@@ -149,12 +149,12 @@ func HandleJoinRoom(c *gin.Context) {
 	// 	log.Fatal(err)
 	// }
 
-    // Get room based roomid (collection name)
+	// Get room based roomid (collection name)
 	//
 	// filter := bson.D{}
-    // options := options.FindOne()
-    // var getroom Room
-    // err := db.Collection(room).FindOne(context.Background(), filter, options).Decode(&getroom)
+	// options := options.FindOne()
+	// var getroom Room
+	// err := db.Collection(room).FindOne(context.Background(), filter, options).Decode(&getroom)
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
