@@ -1,12 +1,80 @@
 package router
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
 	"time"
+
+	"github.com/TanmayPatil105/go-chat/config"
+	"github.com/TanmayPatil105/go-chat/database"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Message struct {
-	UserId    string
-	RoomId    string
-	Text      string
-	TimeStamp time.Time
+	UserId    string    `bson:"userId"`
+	Text      string    `bson:"text"`
+	TimeStamp time.Time `bson:"sent_at"`
+}
+
+func HandleSendMessage(c *gin.Context) {
+	userId := c.Query("userId")
+	if userId == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No user detected",
+		})
+		return
+	}
+
+	room := c.Query("room")
+	if room == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "room is null",
+		})
+		return
+	}
+
+	fmt.Println("Room Id : ", room)
+
+	text := c.Query("text")
+	if text == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "No message sent",
+		})
+		return
+	}
+
+	message := Message{
+		UserId:    userId,
+		Text:      text,
+		TimeStamp: time.Now(),
+	}
+
+	client := database.MongoClient
+	db := client.Database(config.AppConfig.DatabaseName)
+
+	if exists, _ := database.CollectionExists(db, room); !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Room not found",
+		})
+		return
+	}
+
+	collection := db.Collection(room)
+
+	options := options.Update()
+
+	update := bson.M{
+		"$push": bson.M{"messages": message},
+	}
+
+	_, err := collection.UpdateOne(context.Background(), bson.D{}, update, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(http.StatusCreated, message)
 }

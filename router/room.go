@@ -18,8 +18,8 @@ import (
 
 // @Struct UserId -> Name
 type User struct {
-	UserId string
-	Name   string
+	UserId string `bson:"userId"`
+	Name   string `bson:"name"`
 }
 
 type Room struct {
