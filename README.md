@@ -34,6 +34,11 @@
       sent_at: ISODate("2023-08-18T07:14:04.871Z")
     },
     {
+      userId: 'cjfhh1ovbiv3iu26hqig',
+      text: 'It's a chat application!',
+      sent_at: ISODate("2023-08-18T07:13:33.955Z")
+    },
+    {
       userId: 'cjfhin0vbiv3iu26hqjg',
       text: 'Wait, that sounds interesting.',
       sent_at: ISODate("2023-08-18T07:15:02.550Z")
@@ -43,3 +48,4 @@
   updated_at: ISODate("2023-08-18T07:06:47.078Z")
 }
 ```
+<sup>lame</sup>
