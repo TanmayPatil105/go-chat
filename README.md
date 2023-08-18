@@ -12,7 +12,7 @@
 
 ## Room structure
 
-```json
+```javascript
 {
   _id: ObjectId("64df18873f4d4638c8bb2c24"),
   sessionId: '870d0ae3-0632-4639-ab8f-f22ace84bf1a',
