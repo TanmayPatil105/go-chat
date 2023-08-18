@@ -49,3 +49,7 @@
 }
 ```
 <sup>lame</sup>
+
+### Features
+
+- If zero participants, destroy room after five minutes
