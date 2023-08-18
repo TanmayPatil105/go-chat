@@ -209,7 +209,7 @@ func HandleExitRoom(c *gin.Context) {
 	options := options.Update()
 
 	update := bson.M{
-		"$pull": bson.M{"participants": bson.M{"userid": userId}},
+		"$pull": bson.M{"participants": bson.M{"userId": userId}},
 	}
 
 	_, err := collection.UpdateOne(context.Background(), bson.D{}, update, options)
@@ -227,7 +227,10 @@ func HandleExitRoom(c *gin.Context) {
 	}
 
 	if count == 0 {
-		collection.Drop(context.Background())
+		// Timeout for 5 mins before destroying a room
+		time.AfterFunc(5 * time.Minute, func ()  {
+			collection.Drop(context.Background())
+		})
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
