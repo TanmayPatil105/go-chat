@@ -162,19 +162,51 @@ func HandleJoinRoom(c *gin.Context) {
 	// c.JSON(http.StatusCreated, getroom)
 }
 
+func HandleGetRoom(c *gin.Context) {
+	room := c.Query("room")
+	if room == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "room is null",
+		})
+		return
+	}
+	client := database.MongoClient
+	db := client.Database(config.AppConfig.DatabaseName)
+
+	if exists, _ := database.CollectionExists(db, room); !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Room not found",
+		})
+		return
+	}
+
+	collection := db.Collection(room)
+
+	filter := bson.D{}
+	options := options.FindOne()
+
+	var getRoom Room
+	err := collection.FindOne(context.Background(), filter, options).Decode(&getRoom)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(http.StatusCreated, getRoom)
+}
+
 func getNoOfParticipants(db *mongo.Database, room string) (int, error) {
 	collection := db.Collection(room)
 
 	filter := bson.D{}
 	options := options.FindOne()
 
-	var getroom Room
-	err := collection.FindOne(context.Background(), filter, options).Decode(&getroom)
+	var getRoom Room
+	err := collection.FindOne(context.Background(), filter, options).Decode(&getRoom)
 	if err != nil {
 		return 0, err
 	}
 
-	return len(getroom.Participants), nil
+	return len(getRoom.Participants), nil
 }
 
 func HandleExitRoom(c *gin.Context) {
@@ -228,7 +260,7 @@ func HandleExitRoom(c *gin.Context) {
 
 	if count == 0 {
 		// Timeout for 5 mins before destroying a room
-		time.AfterFunc(5 * time.Minute, func ()  {
+		time.AfterFunc(5*time.Minute, func() {
 			collection.Drop(context.Background())
 		})
 	}
