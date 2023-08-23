@@ -9,6 +9,7 @@
 - `/join-room` ? `user` & `room`
 - `/exit-room` ? `user` & `room`
 - `/send-message` ? `user` & `room` & `text`
+- `/get-room` ? `room`
 
 ## Room structure
 
