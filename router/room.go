@@ -270,3 +270,35 @@ func HandleExitRoom(c *gin.Context) {
 	})
 
 }
+
+func CleanUp() {
+	client := database.MongoClient
+	db := client.Database(config.AppConfig.DatabaseName)
+
+	rooms, err := db.ListCollectionNames(context.Background(), bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, room := range rooms {
+		collection := db.Collection(room)
+
+		filter := bson.D{}
+		options := options.FindOne()
+
+		var getRoom Room
+		err = collection.FindOne(context.Background(), filter, options).Decode(&getRoom)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// sub thirty mins
+		subbed := time.Now().Add(-time.Minute * 30)
+
+		if subbed.After(getRoom.UpdatedAt) {
+			// Destroy room if last updated before 30 mins
+			collection.Drop(context.Background())
+		}
+	}
+
+}
