@@ -54,3 +54,4 @@
 ### Features
 
 - If zero participants, destroy room after five minutes
+- Perform cleanup of rooms if inactive for more than 30 minutes
