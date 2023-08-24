@@ -47,10 +47,12 @@ func HandleSendMessage(c *gin.Context) {
 		return
 	}
 
+	timestamp := time.Now()
+
 	message := Message{
 		UserId:    userId,
 		Text:      text,
-		TimeStamp: time.Now(),
+		TimeStamp: timestamp,
 	}
 
 	client := database.MongoClient
@@ -67,11 +69,22 @@ func HandleSendMessage(c *gin.Context) {
 
 	options := options.Update()
 
+	// Insert message
 	update := bson.M{
 		"$push": bson.M{"messages": message},
 	}
 
 	_, err := collection.UpdateOne(context.Background(), bson.D{}, update, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Update updated_at
+	update = bson.M{
+		"$set": bson.M{"updated_at": timestamp},
+	}
+
+	_, err = collection.UpdateOne(context.Background(), bson.D{}, update, options)
 	if err != nil {
 		log.Fatal(err)
 	}
