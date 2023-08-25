@@ -32,9 +32,9 @@ func GetConfig() {
 	var ginMode string
 
 	if mode == "DEBUG" {
-		ginMode = gin.ReleaseMode
-	} else if mode == "RELEASE" {
 		ginMode = gin.DebugMode
+	} else if mode == "RELEASE" {
+		ginMode = gin.ReleaseMode
 	}
 
 	AppConfig = Config{
