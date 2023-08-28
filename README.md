@@ -3,6 +3,10 @@
 - Go (gin)
 - MongoDB
 
+## Clients
+
+- [FinFug](https://github.com/TanmayPatil105/finfug)
+
 ## API
 
 - `/create-room` ? `owner`
