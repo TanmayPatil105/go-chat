@@ -131,6 +131,16 @@ func HandleJoinRoom(c *gin.Context) {
 		log.Fatal(err)
 	}
 
+	// Update updated_at
+	update = bson.M{
+		"$set": bson.M{"updated_at": time.Now()},
+	}
+
+	_, err = collection.UpdateOne(context.Background(), bson.D{}, update, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// @Return SessionId and UserId
 	c.JSON(http.StatusCreated, gin.H{
 		"SessionId": room,
