@@ -5,8 +5,18 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func SetupCronJob() {
-	c := cron.New()
+var job *cron.Cron
 
-	c.AddFunc("@hourly", router.CleanUp())
+func SetupCronJob() {
+	job := cron.New()
+
+	job.AddFunc("@hourly", func() { router.CleanUp() })
+
+	// Start cron job
+	job.Start()
+}
+
+func StopCronJob() {
+	// Stop cron job
+	job.Stop()
 }

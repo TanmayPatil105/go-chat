@@ -13,6 +13,7 @@ import (
 	"github.com/TanmayPatil105/go-chat/config"
 	"github.com/TanmayPatil105/go-chat/database"
 	"github.com/TanmayPatil105/go-chat/router"
+	"github.com/TanmayPatil105/go-chat/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,6 +42,8 @@ func Init() {
 	gin.SetMode(config.AppConfig.GinMode)
 	router := router.SetupRouter()
 
+	utils.SetupCronJob()
+
 	server := http.Server{
 		Addr:    ":" + config.AppConfig.Port,
 		Handler: router,
@@ -50,6 +53,7 @@ func Init() {
 		fmt.Println("Listening on port", config.AppConfig.Port)
 		server.ListenAndServe()
 	}()
+
 }
 
 func Wait() {
@@ -69,6 +73,8 @@ func Disconnect() {
 	}
 
 	log.Println("\nServer Gracefully Stopped!")
+
+	utils.StopCronJob()
 
 	database.DisconnectDB()
 }
