@@ -8,7 +8,7 @@ import (
 var job *cron.Cron
 
 func SetupCronJob() {
-	job := cron.New()
+	job = cron.New()
 
 	job.AddFunc("@hourly", func() { router.CleanUp() })
 
