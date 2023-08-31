@@ -10,8 +10,9 @@ var job *cron.Cron
 func SetupCronJob() {
 	job = cron.New()
 
-	job.AddFunc("@hourly", func() { 
-		router.CleanUp() })
+	job.AddFunc("@hourly", func() {
+		router.CleanUp()
+	})
 
 	// Start cron job
 	job.Start()
