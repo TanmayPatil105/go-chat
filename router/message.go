@@ -2,7 +2,6 @@ package router
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
