@@ -37,8 +37,6 @@ func HandleSendMessage(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("Room Id : ", room)
-
 	text := c.Query("text")
 	if text == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
